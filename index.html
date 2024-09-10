@@ -155,16 +155,16 @@
 
             switch (event.key) {
                 case 'ArrowUp':
-                    positionY -= step;
+                    positionY = Math.max(0, positionY - step);
                     break;
                 case 'ArrowDown':
-                    positionY += step;
+                    positionY = Math.min(100, positionY + step);
                     break;
                 case 'ArrowLeft':
-                    positionX -= step;
+                    positionX = Math.max(0, positionX - step);
                     break;
                 case 'ArrowRight':
-                    positionX += step;
+                    positionX = Math.min(100, positionX + step);
                     break;
             }
 
@@ -195,15 +195,15 @@
 
             if (Math.abs(deltaX) > Math.abs(deltaY)) {
                 if (deltaX > 0) {
-                    positionX += step; // Swipe right
+                    positionX = Math.min(100, positionX + step); // Swipe right
                 } else {
-                    positionX -= step; // Swipe left
+                    positionX = Math.max(0, positionX - step); // Swipe left
                 }
             } else {
                 if (deltaY > 0) {
-                    positionY += step; // Swipe down
+                    positionY = Math.min(100, positionY + step); // Swipe down
                 } else {
-                    positionY -= step; // Swipe up
+                    positionY = Math.max(0, positionY - step); // Swipe up
                 }
             }
 
