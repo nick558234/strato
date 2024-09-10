@@ -165,6 +165,51 @@
             checkCollision();
         }
 
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        function handleTouchStart(event) {
+            const touch = event.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+        }
+
+        function handleTouchMove(event) {
+            if (gameOver) return;
+
+            const touch = event.touches[0];
+            const touchEndX = touch.clientX;
+            const touchEndY = touch.clientY;
+
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+
+            const step = 5;
+
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                // Horizontal swipe
+                if (deltaX > 0) {
+                    positionX += step; // Swipe right
+                } else {
+                    positionX -= step; // Swipe left
+                }
+            } else {
+                // Vertical swipe
+                if (deltaY > 0) {
+                    positionY += step; // Swipe down
+                } else {
+                    positionY -= step; // Swipe up
+                }
+            }
+
+            updateElementPosition();
+            checkCollision();
+
+            // Update touch start positions for continuous swiping
+            touchStartX = touchEndX;
+            touchStartY = touchEndY;
+        }
+
         function checkCollision() {
             if (invincible) return; // Skip collision check if invincible
 
@@ -244,6 +289,8 @@
         characterSelect.addEventListener('change', setCharacterImage);
 
         document.addEventListener('keydown', handleKeyPress);
+        document.addEventListener('touchstart', handleTouchStart);
+        document.addEventListener('touchmove', handleTouchMove);
 
         // Initialize the game
         function initializeGame() {
