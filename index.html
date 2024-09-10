@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mario Style Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #87CEEB;
+            background-image: url('https://www.transparenttextures.com/patterns/brick-wall.png');
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    </style>
+</head>
+<body class="relative">
+       <h1 class="absolute top-5 left-1/2 transform -translate-x-1/2 text-white text-2xl z-10">Move the Mushroom!</h1>
+    <div class="absolute top-16 left-1/2 transform -translate-x-1/2 text-white text-xl z-10">
+        <label for="character-select">Choose a character:</label>
+        <select id="character-select" class="ml-2 bg-gray-800 text-white px-2 py-1 rounded">
+            <option value="mario">Mario</option>
+            <option value="luigi">Luigi</option>
+            <option value="peach">Peach</option>
+        </select>
+    </div>
+    <div id="controlled-element" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-cover border-4 border-black rounded-lg" style="background-image: url('png-clipart-mario-mario-thumbnail.png');">
+        <div class="absolute top-[-20px] left-1/2 transform -translate-x-1/2 w-24 h-2 bg-red-500 border-2 border-black rounded overflow-hidden">
+            <div id="health-bar-inner" class="h-full bg-green-500 w-full"></div>
+        </div>
+    </div>
+    <div class="absolute bottom-0 left-0 w-full h-24 bg-green-700 border-t-10 border-brown-700 shadow-inner"></div>
+    <div id="obstacles-container"></div>
+    <button id="try-again-button" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-blue-500 text-white px-4 py-2 rounded">Try Again</button>
+    <div id="scoreboard" class="absolute top-5 right-5 text-white text-xl z-10">Score: 0</div>
+
+    <script>
+        const controlledElement = document.getElementById('controlled-element');
+        const healthBarInner = document.getElementById('health-bar-inner');
+        const obstaclesContainer = document.getElementById('obstacles-container');
+        const tryAgainButton = document.getElementById('try-again-button');
+        const scoreboard = document.getElementById('scoreboard');
+        const characterSelect = document.getElementById('character-select');
+        let positionX = 50;
+        let positionY = 50;
+        let health = 100;
+        let score = 0;
+        const numObstacles = 20;
+        const obstacles = [];
+        let animationFrameId;
+        let lastHitTime = Date.now();
+        let scoreIntervalId;
+        let invincible = false;
+        let invincibilityEndTime = 0;
+        let gameOver = false;
+
+        // Load score from localStorage
+        if (localStorage.getItem('score')) {
+            score = parseInt(localStorage.getItem('score'), 10);
+            updateScoreboard();
+        }
+
+        function setCharacterImage() {
+            const selectedCharacter = characterSelect.value;
+            let imageUrl = '';
+
+            switch (selectedCharacter) {
+                case 'luigi':
+                    imageUrl = 'Luigi.webp';
+                    break;
+                case 'peach':
+                    imageUrl = 'Peach.webp';
+                    break;
+                case 'mario':
+                default:
+                    imageUrl = 'mario.webp';
+                    break;
+            }
+
+            controlledElement.style.backgroundImage = `url('${imageUrl}')`;
+        }
+
+        function createObstacle() {
+            const obstacle = document.createElement('div');
+            obstacle.className = 'absolute w-12 h-12 bg-red-500 border-2 border-black rounded-full';
+            obstacle.style.top = Math.random() * window.innerHeight + 'px';
+            obstacle.style.left = Math.random() * window.innerWidth + 'px';
+            obstacle.directionX = Math.random() > 0.5 ? 1 : -1;
+            obstacle.directionY = Math.random() > 0.5 ? 1 : -1;
+            obstaclesContainer.appendChild(obstacle);
+            obstacles.push(obstacle);
+        }
+
+        function moveObstacles() {
+            obstacles.forEach(obstacle => {
+                const step = 2;
+
+                let top = parseFloat(obstacle.style.top);
+                let left = parseFloat(obstacle.style.left);
+
+                top += obstacle.directionY * step;
+                left += obstacle.directionX * step;
+
+                if (top < 0 || top > window.innerHeight - obstacle.offsetHeight) {
+                    obstacle.directionY *= -1;
+                }
+                if (left < 0 || left > window.innerWidth - obstacle.offsetWidth) {
+                    obstacle.directionX *= -1;
+                }
+
+                obstacle.style.top = top + 'px';
+                obstacle.style.left = left + 'px';
+            });
+
+            checkCollision();
+            animationFrameId = requestAnimationFrame(moveObstacles);
+        }
+
+        function updateElementPosition() {
+            if (!gameOver) {
+                const elementWidth = controlledElement.offsetWidth;
+                const elementHeight = controlledElement.offsetHeight;
+
+                // Calculate new position
+                let newPositionX = (positionX / 100) * (window.innerWidth - elementWidth);
+                let newPositionY = (positionY / 100) * (window.innerHeight - elementHeight);
+
+                // Constrain within screen bounds
+                newPositionX = Math.max(0, Math.min(window.innerWidth - elementWidth, newPositionX));
+                newPositionY = Math.max(0, Math.min(window.innerHeight - elementHeight, newPositionY));
+
+                controlledElement.style.left = newPositionX + 'px';
+                controlledElement.style.top = newPositionY + 'px';
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (gameOver) return;
+
+            const step = 5;
+
+            switch (event.key) {
+                case 'ArrowUp':
+                    positionY -= step;
+                    break;
+                case 'ArrowDown':
+                    positionY += step;
+                    break;
+                case 'ArrowLeft':
+                    positionX -= step;
+                    break;
+                case 'ArrowRight':
+                    positionX += step;
+                    break;
+            }
+
+            updateElementPosition();
+            checkCollision();
+        }
+
+        function checkCollision() {
+            if (invincible) return; // Skip collision check if invincible
+
+            const controlledRect = controlledElement.getBoundingClientRect();
+
+            obstacles.forEach(obstacle => {
+                const obstacleRect = obstacle.getBoundingClientRect();
+
+                if (
+                    controlledRect.left < obstacleRect.right &&
+                    controlledRect.right > obstacleRect.left &&
+                    controlledRect.top < obstacleRect.bottom &&
+                    controlledRect.bottom > obstacleRect.top
+                ) {
+                    console.log('Ouch! You got hit by the obstacle!');
+                    health -= 20;
+                    updateHealthBar();
+                    score = 0;
+                    localStorage.setItem('score', score);
+                    updateScoreboard();
+                    lastHitTime = Date.now();
+                }
+            });
+        }
+
+        function updateHealthBar() {
+            healthBarInner.style.width = health + '%';
+            if (health <= 0) {
+                endGame();
+            }
+        }
+
+        function updateScore() {
+            score += 1;
+            localStorage.setItem('score', score);
+            updateScoreboard();
+        }
+
+        function updateScoreboard() {
+            scoreboard.textContent = `Score: ${score}`;
+        }
+
+        function endGame() {
+            gameOver = true;
+            cancelAnimationFrame(animationFrameId);
+            clearInterval(scoreIntervalId);
+            tryAgainButton.classList.remove('hidden');
+        }
+
+        function increaseScoreOverTime() {
+            scoreIntervalId = setInterval(() => {
+                const now = Date.now();
+                if (now - lastHitTime >= 1000) {
+                    updateScore();
+                }
+            }, 1000);
+        }
+
+        function startInvincibility() {
+            invincible = true;
+            invincibilityEndTime = Date.now() + 5000; // 5 seconds of invincibility
+
+            setTimeout(() => {
+                invincible = false;
+            }, 5000);
+        }
+
+        function gameStart() {
+            setCharacterImage();
+            startInvincibility();
+        }
+
+        tryAgainButton.addEventListener('click', () => {
+            location.reload();
+        });
+
+        characterSelect.addEventListener('change', setCharacterImage);
+
+        document.addEventListener('keydown', handleKeyPress);
+
+        // Initialize the game
+        function initializeGame() {
+            // Create obstacles
+            for (let i = 0; i < numObstacles; i++) {
+                createObstacle();
+            }
+
+            // Start moving obstacles and score increase over time
+            moveObstacles();
+            increaseScoreOverTime();
+
+            // Start the game and apply initial invincibility
+            gameStart();
+        }
+
+        // Run the game initialization
+        initializeGame();
+    </script>
+</body>
+</html>
