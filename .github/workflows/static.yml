@@ -16,11 +16,11 @@ jobs:
 
       - name: Deploy to server using HTTPS
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_PATH: /mnt/web301/e3/49/512373149/htdocs
-          REPO_URL: https://github.com/<your-username>/<your-repo>.git
+          REPO_URL: https://github.com/nick558234/strato.git
         run: |
           # Set up HTTPS credentials
           git config --global credential.helper store
