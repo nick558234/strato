@@ -16,16 +16,13 @@ jobs:
       - name: Deploy to server using HTTPS
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # Ensure this secret is properly added in GitHub settings
-          SERVER_USER: ${{ secrets.SERVER_USER }}  # Your server username
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}  # Your server hostname
           SERVER_PATH: /mnt/web301/e3/49/512373149/htdocs/ # Your server path
           REPO_URL: https://github.com/nick558234/strato.git  # Your repository URL
         run: |
-          # Navigate to server directory
-          cd $SERVER_PATH
-          
-          # Configure Git for HTTPS
+          # Ensure Git is configured to use HTTPS with the GitHub token
           git config --global credential.helper store
           echo "https://${GITHUB_TOKEN}:@github.com" > ~/.git-credentials
-          # Pull changes from GitHub repository
+
+          # Pull the latest changes from the repository
+          cd $SERVER_PATH
           git pull $REPO_URL main
