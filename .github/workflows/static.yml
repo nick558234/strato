@@ -14,18 +14,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Deploy to server
+      - name: Deploy to server using HTTPS
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          SERVER_PATH: ${{ secrets.SERVER_PATH }}
+          SERVER_PATH: /mnt/web301/e3/49/512373149/htdocs
+          REPO_URL: https://github.com/<your-username>/<your-repo>.git
         run: |
-          # Set up SSH
-          mkdir -p ~/.ssh
-          echo "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts
-
-          # Deploy changes
-          ssh $SERVER_USER@$SERVER_HOST "cd $SERVER_PATH && git pull origin main"
+          # Set up HTTPS credentials
+          git config --global credential.helper store
+          echo "https://${GITHUB_TOKEN}:@github.com" > ~/.git-credentials
+          
+          # Connect to the server and pull the latest changes using HTTPS
+          ssh $SERVER_USER@$SERVER_HOST "
+            cd $SERVER_PATH &&
+            git pull $REPO_URL main
+          "
