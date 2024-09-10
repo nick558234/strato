@@ -16,7 +16,7 @@ jobs:
       - name: Deploy to server using HTTPS
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # Ensure this secret is properly added in GitHub settings
-          SERVER_PATH: /mnt/web301/e3/49/512373149/htdocs/ # Your server path
+          SERVER_PATH: /mnt/web301/e3/49/512373149/htdocs # Your server path
           REPO_URL: https://github.com/nick558234/strato.git  # Your repository URL
         run: |
           # Ensure Git is configured to use HTTPS with the GitHub token
