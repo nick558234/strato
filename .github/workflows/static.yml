@@ -1,4 +1,3 @@
-# .github/workflows/deploy.yml
 name: Deploy to Server
 
 on:
@@ -16,18 +15,18 @@ jobs:
 
       - name: Deploy to server using HTTPS
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          SERVER_USER: ${{ secrets.SERVER_USER }}
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          SERVER_PATH: /mnt/web301/e3/49/512373149/htdocs
-          REPO_URL: https://github.com/nick558234/strato.git
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # Ensure this secret is properly added in GitHub settings
+          SERVER_USER: ${{ secrets.SERVER_USER }}  # Your server username
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}  # Your server hostname
+          SERVER_PATH: /mnt/web301/e3/49/512373149/htdocs  # Your server path
+          REPO_URL: https://github.com/nick558234/strato.git  # Your repository URL
         run: |
-          # Set up HTTPS credentials
+          # Navigate to server directory
+          cd $SERVER_PATH
+          
+          # Configure Git for HTTPS
           git config --global credential.helper store
           echo "https://${GITHUB_TOKEN}:@github.com" > ~/.git-credentials
-          
-          # Connect to the server and pull the latest changes using HTTPS
-          ssh $SERVER_USER@$SERVER_HOST "
-            cd $SERVER_PATH &&
-            git pull $REPO_URL main
-          "
+
+          # Pull changes from GitHub repository
+          git pull $REPO_URL main
