@@ -19,10 +19,15 @@
         }
 
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        /* Add transition for smooth movement */
+        #controlled-element {
+            transition: 0.2s;
+        }
     </style>
 </head>
 <body class="relative">
-       <h1 class="absolute top-5 left-1/2 transform -translate-x-1/2 text-white text-2xl z-10">Move the character</h1>
+    <h1 class="absolute top-5 left-1/2 transform -translate-x-1/2 text-white text-2xl z-10">Move the character</h1>
     <div class="absolute top-16 left-1/2 transform -translate-x-1/2 text-white text-xl z-10">
         <label for="character-select">Choose a character:</label>
         <select id="character-select" class="ml-2 bg-gray-800 text-white px-2 py-1 rounded">
@@ -31,8 +36,8 @@
             <option value="peach">Peach</option>
         </select>
     </div>
-    <div id="controlled-element" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-cover border-4 border-black rounded-lg" style="background-image: url('png-clipart-mario-mario-thumbnail.png');">
-        <div class="absolute top-[-20px] left-1/2 transform -translate-x-1/2 w-24 h-2 bg-red-500 border-2 border-black rounded overflow-hidden">
+    <div id="controlled-element" class="absolute z-10 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 sm:w-16 sm:h-16 bg-cover border-4 border-black rounded-lg" style="background-image: url('png-clipart-mario-mario-thumbnail.png');">
+        <div class="absolute top-[-20px] left-1/2 transform -translate-x-1/2 w-24 sm:w-16 h-2 bg-red-500 border-2 border-black rounded overflow-hidden">
             <div id="health-bar-inner" class="h-full bg-green-500 w-full"></div>
         </div>
     </div>
@@ -52,7 +57,7 @@
         let positionY = 50;
         let health = 100;
         let score = 0;
-        const numObstacles = 20;
+        let numObstacles = 20;
         const obstacles = [];
         let animationFrameId;
         let lastHitTime = Date.now();
@@ -60,6 +65,12 @@
         let invincible = false;
         let invincibilityEndTime = 0;
         let gameOver = false;
+        const step = 1; // Reduced speed
+
+        // Adjust number of obstacles for mobile devices
+        if (window.innerWidth <= 640) {
+            numObstacles = numObstacles / 2;
+        }
 
         // Load score from localStorage
         if (localStorage.getItem('score')) {
@@ -89,7 +100,7 @@
 
         function createObstacle() {
             const obstacle = document.createElement('div');
-            obstacle.className = 'absolute w-12 h-12 bg-red-500 border-2 border-black rounded-full';
+            obstacle.className = 'absolute w-12 sm:w-8 h-12 sm:h-8 bg-red-500 border-2 border-black rounded-full';
             obstacle.style.top = Math.random() * window.innerHeight + 'px';
             obstacle.style.left = Math.random() * window.innerWidth + 'px';
             obstacle.directionX = Math.random() > 0.5 ? 1 : -1;
@@ -100,8 +111,6 @@
 
         function moveObstacles() {
             obstacles.forEach(obstacle => {
-                const step = 2;
-
                 let top = parseFloat(obstacle.style.top);
                 let left = parseFloat(obstacle.style.left);
 
@@ -128,11 +137,9 @@
                 const elementWidth = controlledElement.offsetWidth;
                 const elementHeight = controlledElement.offsetHeight;
 
-                // Calculate new position
                 let newPositionX = (positionX / 100) * (window.innerWidth - elementWidth);
                 let newPositionY = (positionY / 100) * (window.innerHeight - elementHeight);
 
-                // Constrain within screen bounds
                 newPositionX = Math.max(0, Math.min(window.innerWidth - elementWidth, newPositionX));
                 newPositionY = Math.max(0, Math.min(window.innerHeight - elementHeight, newPositionY));
 
@@ -148,16 +155,16 @@
 
             switch (event.key) {
                 case 'ArrowUp':
-                    positionY -= step;
+                    positionY = Math.max(0, positionY - step);
                     break;
                 case 'ArrowDown':
-                    positionY += step;
+                    positionY = Math.min(100, positionY + step);
                     break;
                 case 'ArrowLeft':
-                    positionX -= step;
+                    positionX = Math.max(0, positionX - step);
                     break;
                 case 'ArrowRight':
-                    positionX += step;
+                    positionX = Math.min(100, positionX + step);
                     break;
             }
 
@@ -165,8 +172,50 @@
             checkCollision();
         }
 
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        function handleTouchStart(event) {
+            const touch = event.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+        }
+
+        function handleTouchMove(event) {
+            if (gameOver) return;
+
+            const touch = event.touches[0];
+            const touchEndX = touch.clientX;
+            const touchEndY = touch.clientY;
+
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+
+            const step = 2; // Reduced step for touch movements
+
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                if (deltaX > 0) {
+                    positionX = Math.min(100, positionX + step); // Swipe right
+                } else {
+                    positionX = Math.max(0, positionX - step); // Swipe left
+                }
+            } else {
+                if (deltaY > 0) {
+                    positionY = Math.min(100, positionY + step); // Swipe down
+                } else {
+                    positionY = Math.max(0, positionY - step); // Swipe up
+                }
+            }
+
+            updateElementPosition();
+            checkCollision();
+
+            touchStartX = touchEndX;
+            touchStartY = touchEndY;
+        }
+
         function checkCollision() {
-            if (invincible) return; // Skip collision check if invincible
+            if (invincible) return;
 
             const controlledRect = controlledElement.getBoundingClientRect();
 
@@ -179,32 +228,43 @@
                     controlledRect.top < obstacleRect.bottom &&
                     controlledRect.bottom > obstacleRect.top
                 ) {
-                    console.log('Ouch! You got hit by the obstacle!');
-                    health -= 20;
-                    updateHealthBar();
-                    score = 0;
-                    localStorage.setItem('score', score);
-                    updateScoreboard();
-                    lastHitTime = Date.now();
+                    console.log('Ouch! Collision detected!');
+                    handleCollision();
                 }
             });
         }
 
-        function updateHealthBar() {
-            healthBarInner.style.width = health + '%';
-            if (health <= 0) {
-                endGame();
+        function handleCollision() {
+            const now = Date.now();
+
+            if (now - lastHitTime > 1000) {
+                health -= 33.34;
+                lastHitTime = now;
+                updateHealthBar();
+                if (health <= 0) {
+                    endGame();
+                }
             }
         }
 
-        function updateScore() {
-            score += 1;
-            localStorage.setItem('score', score);
-            updateScoreboard();
+        function updateHealthBar() {
+            healthBarInner.style.width = health + '%';
         }
 
         function updateScoreboard() {
-            scoreboard.textContent = `Score: ${score}`;
+            scoreboard.textContent = 'Score: ' + score;
+        }
+
+        function startInvincibility() {
+            invincible = true;
+            invincibilityEndTime = Date.now() + 5000;
+        }
+
+        function checkInvincibility() {
+            const now = Date.now();
+            if (invincible && now >= invincibilityEndTime) {
+                invincible = false;
+            }
         }
 
         function endGame() {
@@ -212,56 +272,45 @@
             cancelAnimationFrame(animationFrameId);
             clearInterval(scoreIntervalId);
             tryAgainButton.classList.remove('hidden');
+            localStorage.setItem('score', score);
         }
 
-        function increaseScoreOverTime() {
-            scoreIntervalId = setInterval(() => {
-                const now = Date.now();
-                if (now - lastHitTime >= 1000) {
-                    updateScore();
-                }
-            }, 1000);
-        }
-
-        function startInvincibility() {
-            invincible = true;
-            invincibilityEndTime = Date.now() + 5000; // 5 seconds of invincibility
-
-            setTimeout(() => {
-                invincible = false;
-            }, 5000);
-        }
-
-        function gameStart() {
-            setCharacterImage();
-            startInvincibility();
-        }
-
-        tryAgainButton.addEventListener('click', () => {
-            location.reload();
-        });
-
-        characterSelect.addEventListener('change', setCharacterImage);
-
-        document.addEventListener('keydown', handleKeyPress);
-
-        // Initialize the game
-        function initializeGame() {
-            // Create obstacles
+        function restartGame() {
+            health = 100;
+            score = 0;
+            gameOver = false;
+            updateHealthBar();
+            updateScoreboard();
+            tryAgainButton.classList.add('hidden');
+            cancelAnimationFrame(animationFrameId); // Cancel any ongoing animation frames
+            obstacles.forEach(obstacle => obstacle.remove()); // Remove existing obstacles
+            obstacles.length = 0; // Clear the obstacles array
             for (let i = 0; i < numObstacles; i++) {
                 createObstacle();
             }
-
-            // Start moving obstacles and score increase over time
+            scoreIntervalId = setInterval(() => {
+                score += 1;
+                updateScoreboard();
+            }, 1000);
             moveObstacles();
-            increaseScoreOverTime();
-
-            // Start the game and apply initial invincibility
-            gameStart();
         }
 
-        // Run the game initialization
-        initializeGame();
+        characterSelect.addEventListener('change', setCharacterImage);
+        document.addEventListener('keydown', handleKeyPress);
+        document.addEventListener('touchstart', handleTouchStart);
+        document.addEventListener('touchmove', handleTouchMove);
+        tryAgainButton.addEventListener('click', restartGame);
+
+        for (let i = 0; i < numObstacles; i++) {
+            createObstacle();
+        }
+
+        scoreIntervalId = setInterval(() => {
+            score += 1;
+            updateScoreboard();
+        }, 1000);
+
+        moveObstacles();
     </script>
 </body>
 </html>
