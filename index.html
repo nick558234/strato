@@ -253,7 +253,23 @@
     function handleKeyPress(event) {
       if (gameOver) return;
     
-      const keyStep = step * 5; // Use the step value based on difficulty
+      let keyStep;
+      switch (difficulty) {
+        case "easy":
+          keyStep = step * 3;
+          break;
+        case "medium":
+          keyStep = step * 3;
+          break;
+        case "hard":
+          keyStep = step * 3;
+          break;
+        case "extreme":
+          keyStep = step * 3; // Reduce the multiplier for extreme difficulty
+          break;
+        default:
+          keyStep = step * 3;
+      }
     
       switch (event.key) {
         case "ArrowUp":
