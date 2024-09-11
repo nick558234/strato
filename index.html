@@ -27,6 +27,10 @@
       #controlled-element {
         transition: 0.2s;
       }
+
+      .healing-obstacle {
+        background-color: green;
+      }
     </style>
   </head>
   <body class="relative">
@@ -180,6 +184,18 @@
         obstacles.push(obstacle);
       }
 
+      function createHealingObstacle() {
+        const healingObstacle = document.createElement("div");
+        healingObstacle.className =
+          "absolute w-8 h-8 sm:w-12 sm:h-12 bg-green-500 border-2 border-black rounded-full healing-obstacle";
+        healingObstacle.style.top = Math.random() * window.innerHeight + "px";
+        healingObstacle.style.left = Math.random() * window.innerWidth + "px";
+        healingObstacle.directionX = Math.random() > 0.5 ? 1 : -1;
+        healingObstacle.directionY = Math.random() > 0.5 ? 1 : -1;
+        obstaclesContainer.appendChild(healingObstacle);
+        obstacles.push(healingObstacle);
+      }
+
       function moveObstacles() {
         obstacles.forEach((obstacle) => {
           let top = parseFloat(obstacle.style.top);
@@ -307,8 +323,11 @@
             controlledRect.top < obstacleRect.bottom &&
             controlledRect.bottom > obstacleRect.top
           ) {
-            console.log("Ouch! Collision detected!");
-            handleCollision();
+            if (obstacle.classList.contains("healing-obstacle")) {
+              handleHealingCollision(obstacle);
+            } else {
+              handleCollision();
+            }
           }
         });
       }
@@ -324,6 +343,13 @@
             endGame();
           }
         }
+      }
+
+      function handleHealingCollision(obstacle) {
+        health = Math.min(100, health + 20); // Increase health by 20, max 100
+        updateHealthBar();
+        obstacle.remove(); // Remove the healing obstacle after collision
+        obstacles.splice(obstacles.indexOf(obstacle), 1); // Remove from obstacles array
       }
 
       function updateHealthBar() {
@@ -368,6 +394,7 @@
         setDifficulty(); // Reset difficulty settings
         for (let i = 0; i < numObstacles; i++) {
           createObstacle();
+          if (i % 5 === 0) createHealingObstacle(); // Add a healing obstacle every 5 obstacles
         }
         scoreIntervalId = setInterval(() => {
           score += 1;
@@ -384,11 +411,13 @@
       tryAgainButton.addEventListener("click", restartGame);
 
       // Blur select elements when they are focused to prevent key presses from changing the selection
+      // Blur select elements when they are focused to prevent key presses from changing the selection
       characterSelect.addEventListener("focus", (event) => event.target.blur());
-      difficultySelect.addEventListener("focus", (event) => event.target.blur());
+      difficultySelect.addEventListener("focus", (event) =>
+        event.target.blur()
+      );
 
       setDifficulty(); // Set initial difficulty
-         
       for (let i = 0; i < numObstacles; i++) {
         createObstacle();
       }
