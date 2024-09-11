@@ -230,20 +230,20 @@
       function handleKeyPress(event) {
         if (gameOver) return;
 
-        const step = 5;
+        const keyStep = step * 5; // Use the step value based on difficulty
 
         switch (event.key) {
           case "ArrowUp":
-            positionY = Math.max(0, positionY - step);
+            positionY = Math.max(0, positionY - keyStep);
             break;
           case "ArrowDown":
-            positionY = Math.min(100, positionY + step);
+            positionY = Math.min(100, positionY + keyStep);
             break;
           case "ArrowLeft":
-            positionX = Math.max(0, positionX - step);
+            positionX = Math.max(0, positionX - keyStep);
             break;
           case "ArrowRight":
-            positionX = Math.min(100, positionX + step);
+            positionX = Math.min(100, positionX + keyStep);
             break;
         }
 
@@ -270,19 +270,19 @@
         const deltaX = touchEndX - touchStartX;
         const deltaY = touchEndY - touchStartY;
 
-        const step = 2; // Reduced step for touch movements
+        const touchStep = step * 2; // Use the step value based on difficulty
 
         if (Math.abs(deltaX) > Math.abs(deltaY)) {
           if (deltaX > 0) {
-            positionX = Math.min(100, positionX + step); // Swipe right
+            positionX = Math.min(100, positionX + touchStep); // Swipe right
           } else {
-            positionX = Math.max(0, positionX - step); // Swipe left
+            positionX = Math.max(0, positionX - touchStep); // Swipe left
           }
         } else {
           if (deltaY > 0) {
-            positionY = Math.min(100, positionY + step); // Swipe down
+            positionY = Math.min(100, positionY + touchStep); // Swipe down
           } else {
-            positionY = Math.max(0, positionY - step); // Swipe up
+            positionY = Math.max(0, positionY - touchStep); // Swipe up
           }
         }
 
