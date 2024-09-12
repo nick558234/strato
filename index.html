@@ -1,481 +1,547 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Game</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <style>
-    body {
-      background-color: #87ceeb;
-      background-image: url("https://www.transparenttextures.com/patterns/brick-wall.png");
-      height: 100vh;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-      font-family: "Press Start 2P", cursive;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #87ceeb;
+        background-image: url("https://www.transparenttextures.com/patterns/brick-wall.png");
+        height: 100vh;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        font-family: "Press Start 2P", cursive;
+      }
 
-    @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
 
-    /* Add transition for smooth movement */
-    #controlled-element {
-      transition: 0.2s;
-    }
+      /* Add transition for smooth movement */
+      #controlled-element {
+        transition: 0.2s;
+      }
 
-    .healing-obstacle {
-      background-color: green;
-    }
-  </style>
-</head>
-<body class="relative">
-  <h1 class="absolute top-5 left-1/2 transform -translate-x-1/2 text-white text-2xl z-10">
-    Move the character
-  </h1>
-  <div class="absolute top-16 left-1/2 transform -translate-x-1/2 text-white text-xl z-10 mt-10 md:mt-2">
-    <label for="character-select">Choose a character:</label>
-    <select id="character-select" class="ml-2 bg-gray-800 text-white px-2 py-1 rounded">
-      <option value="mario">Mario</option>
-      <option value="luigi">Luigi</option>
-      <option value="peach">Peach</option>
-    </select>
-  </div>
-  <div class="absolute top-24 left-1/2 transform -translate-x-1/2 text-white text-xl z-10 mt-20 md:mt-2">
-    <label for="difficulty-select">Choose difficulty:</label>
-    <select id="difficulty-select" class="ml-2 bg-gray-800 text-white px-2 py-1 rounded">
-      <option value="easy">Easy</option>
-      <option value="medium">Medium</option>
-      <option value="hard">Hard</option>
-      <option value="extreme">Extreme</option>
-    </select>
-  </div>
-  <div id="controlled-element" class="absolute z-10 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 sm:w-24 sm:h-24 bg-cover border-4 border-black rounded-lg" style="background-image: url('png-clipart-mario-mario-thumbnail.png')">
-    <div class="absolute top-[-20px] left-1/2 transform -translate-x-1/2 w-16 h-2 sm:w-24 bg-red-500 border-2 border-black rounded overflow-hidden">
-      <div id="health-bar-inner" class="h-full bg-green-500 w-full"></div>
+      .healing-obstacle {
+        background-color: green;
+      }
+    </style>
+  </head>
+  <body class="relative">
+    <h1
+      class="absolute top-5 left-1/2 transform -translate-x-1/2 text-white text-2xl z-10"
+    >
+      Move the character
+    </h1>
+    <div
+      class="absolute top-16 left-1/2 transform -translate-x-1/2 text-white text-xl z-10 mt-10 md:mt-2"
+    >
+      <label for="character-select">Choose a character:</label>
+      <select
+        id="character-select"
+        class="ml-2 bg-gray-800 text-white px-2 py-1 rounded"
+      >
+        <option value="mario">Mario</option>
+        <option value="luigi">Luigi</option>
+        <option value="peach">Peach</option>
+      </select>
     </div>
-  </div>
-  <div class="absolute bottom-0 left-0 w-full h-16 sm:h-24 bg-green-700 border-t-10 border-brown-700 shadow-inner"></div>
-  <div id="obstacles-container"></div>
-  <button id="try-again-button" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-blue-500 text-white px-4 py-2 rounded">
-    Try Again
-  </button>
-  <div class="absolute top-5 right-5 flex flex-col space-y-4 z-10">
-    <div id="scoreboard" class="text-white text-xl bg-gray-800 bg-opacity-75 p-4 rounded-lg shadow-lg">
-      Score: 0
+    <div
+      class="absolute top-24 left-1/2 transform -translate-x-1/2 text-white text-xl z-10 mt-20 md:mt-2"
+    >
+      <label for="difficulty-select">Choose difficulty:</label>
+      <select
+        id="difficulty-select"
+        class="ml-2 bg-gray-800 text-white px-2 py-1 rounded"
+      >
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+        <option value="extreme">Extreme</option>
+      </select>
     </div>
-    <div id="score-history" class="text-white text-xl bg-gray-800 bg-opacity-75 p-4 rounded-lg shadow-lg w-64 hidden">
-      <h2 class="text-2xl font-bold mb-4">Score History</h2>
-      <table class="min-w-full bg-gray-800 bg-opacity-75 rounded-lg">
-        <thead>
-          <tr>
-            <th class="py-2 px-4 border-b border-gray-700 text-left">Difficulty</th>
-            <th class="py-2 px-4 border-b border-gray-700 text-left">Scores</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="py-2 px-4 border-b border-gray-700">Easy</td>
-            <td class="py-2 px-4 border-b border-gray-700">
-              <ul id="easy-scores" class="list-disc list-inside"></ul>
-            </td>
-          </tr>
-          <tr>
-            <td class="py-2 px-4 border-b border-gray-700">Medium</td>
-            <td class="py-2 px-4 border-b border-gray-700">
-              <ul id="medium-scores" class="list-disc list-inside"></ul>
-            </td>
-          </tr>
-          <tr>
-            <td class="py-2 px-4 border-b border-gray-700">Hard</td>
-            <td class="py-2 px-4 border-b border-gray-700">
-              <ul id="hard-scores" class="list-disc list-inside"></ul>
-            </td>
-          </tr>
-          <tr>
-            <td class="py-2 px-4">Extreme</td>
-            <td class="py-2 px-4">
-              <ul id="extreme-scores" class="list-disc list-inside"></ul>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div
+      id="controlled-element"
+      class="absolute z-10 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 sm:w-24 sm:h-24 bg-cover border-4 border-black rounded-lg"
+      style="background-image: url('png-clipart-mario-mario-thumbnail.png')"
+    >
+      <div
+        class="absolute top-[-20px] left-1/2 transform -translate-x-1/2 w-16 h-2 sm:w-24 bg-red-500 border-2 border-black rounded overflow-hidden"
+      >
+        <div id="health-bar-inner" class="h-full bg-green-500 w-full"></div>
+      </div>
     </div>
-  </div>
-  <script>   
-        const controlledElement = document.getElementById("controlled-element");
-    const healthBarInner = document.getElementById("health-bar-inner");
-    const obstaclesContainer = document.getElementById("obstacles-container");
-    const tryAgainButton = document.getElementById("try-again-button");
-    const scoreboard = document.getElementById("scoreboard");
-    const characterSelect = document.getElementById("character-select");
-    const difficultySelect = document.getElementById("difficulty-select");
-    const easyScoresList = document.getElementById("easy-scores").querySelector("ul");
-    const mediumScoresList = document.getElementById("medium-scores").querySelector("ul");
-    const hardScoresList = document.getElementById("hard-scores").querySelector("ul");
-    const extremeScoresList = document.getElementById("extreme-scores").querySelector("ul");
-    
-    let positionX = 50;
-    let positionY = 50;
-    let health = 100;
-    let score = 0;
-    let numObstacles = 20;
-    const obstacles = [];
-    let animationFrameId;
-    let lastHitTime = Date.now();
-    let scoreIntervalId;
-    let invincible = false;
-    let invincibilityEndTime = 0;
-    let gameOver = false;
-    let step = 1; // Reduced speed
-    let difficulty = "easy";
-    let extremeIntervalId;
-    
-    // Adjust number of obstacles for mobile devices
-    if (window.innerWidth <= 640) {
-      numObstacles = numObstacles / 2;
-    }
-    
-    // Load score history from localStorage
-    const scoreHistory = JSON.parse(localStorage.getItem("scoreHistory")) || {
-      easy: [],
-      medium: [],
-      hard: [],
-      extreme: [],
-    };
-    
-    function setCharacterImage() {
-      const selectedCharacter = characterSelect.value;
-      let imageUrl = "";
-    
-      switch (selectedCharacter) {
-        case "luigi":
-          imageUrl = "Luigi.webp";
-          break;
-        case "peach":
-          imageUrl = "Peach.webp";
-          break;
-        case "mario":
-        default:
-          imageUrl = "mario.webp";
-          break;
+    <div
+      class="absolute bottom-0 left-0 w-full h-16 sm:h-24 bg-green-700 border-t-10 border-brown-700 shadow-inner"
+    ></div>
+    <div id="obstacles-container"></div>
+    <button
+      id="try-again-button"
+      class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-blue-500 text-white px-4 py-2 rounded"
+    >
+      Try Again
+    </button>
+    <div class="absolute top-5 right-5 flex flex-col space-y-4 z-10">
+      <div
+        id="scoreboard"
+        class="text-white text-xl bg-gray-800 bg-opacity-75 p-4 rounded-lg shadow-lg"
+      >
+        Score: 0
+      </div>
+      <div
+        id="score-history"
+        class="text-white text-xl bg-gray-800 bg-opacity-75 p-4 rounded-lg shadow-lg w-64 hidden"
+      >
+        <h2 class="text-2xl font-bold mb-4">Score History</h2>
+        <table class="min-w-full bg-gray-800 bg-opacity-75 rounded-lg">
+          <thead>
+            <tr>
+              <th class="py-2 px-4 border-b border-gray-700 text-left">
+                Difficulty
+              </th>
+              <th class="py-2 px-4 border-b border-gray-700 text-left">
+                Scores
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="py-2 px-4 border-b border-gray-700">Easy</td>
+              <td class="py-2 px-4 border-b border-gray-700">
+                <ul id="easy-scores" class="list-disc list-inside"></ul>
+              </td>
+            </tr>
+            <tr>
+              <td class="py-2 px-4 border-b border-gray-700">Medium</td>
+              <td class="py-2 px-4 border-b border-gray-700">
+                <ul id="medium-scores" class="list-disc list-inside"></ul>
+              </td>
+            </tr>
+            <tr>
+              <td class="py-2 px-4 border-b border-gray-700">Hard</td>
+              <td class="py-2 px-4 border-b border-gray-700">
+                <ul id="hard-scores" class="list-disc list-inside"></ul>
+              </td>
+            </tr>
+            <tr>
+              <td class="py-2 px-4">Extreme</td>
+              <td class="py-2 px-4">
+                <ul id="extreme-scores" class="list-disc list-inside"></ul>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <script>
+      const controlledElement = document.getElementById("controlled-element");
+      const healthBarInner = document.getElementById("health-bar-inner");
+      const obstaclesContainer = document.getElementById("obstacles-container");
+      const tryAgainButton = document.getElementById("try-again-button");
+      const scoreboard = document.getElementById("scoreboard");
+      const characterSelect = document.getElementById("character-select");
+      const difficultySelect = document.getElementById("difficulty-select");
+      const easyScoresList = document.getElementById("easy-scores");
+      const mediumScoresList = document.getElementById("medium-scores");
+      const hardScoresList = document.getElementById("hard-scores");
+      const extremeScoresList = document.getElementById("extreme-scores");
+
+      let positionX = 50;
+      let positionY = 50;
+      let health = 100;
+      let score = 0;
+      let numObstacles = 20;
+      let numHealingObstacles = 5; // Number of healing obstacles
+      const obstacles = [];
+      let animationFrameId;
+      let lastHitTime = Date.now();
+      let scoreIntervalId;
+      let invincible = false;
+      let invincibilityEndTime = 0;
+      let gameOver = false;
+      let step = 1; // Reduced speed
+      let difficulty = "easy";
+      let extremeIntervalId;
+
+      // Adjust number of obstacles for mobile devices
+      if (window.innerWidth <= 640) {
+        numObstacles = numObstacles / 2;
+        numHealingObstacles = numHealingObstacles / 2;
       }
-    
-      controlledElement.style.backgroundImage = `url('${imageUrl}')`;
-    }
-    
-    function setDifficulty() {
-      difficulty = difficultySelect.value;
-      switch (difficulty) {
-        case "easy":
-          numObstacles = 10;
-          step = 1;
-          break;
-        case "medium":
-          numObstacles = 20;
-          step = 2;
-          break;
-        case "hard":
-          numObstacles = 30;
-          step = 2;
-          break;
-        case "extreme":
-          numObstacles = 40;
-          step = 4;
-          if (extremeIntervalId) clearInterval(extremeIntervalId);
-          extremeIntervalId = setInterval(() => {
-            step += 1;
-          }, 10000);
-          break;
-      }
-    }
-    
-    function createObstacle() {
-      const obstacle = document.createElement("div");
-      obstacle.className =
-        "absolute w-8 h-8 sm:w-12 sm:h-12 bg-red-500 border-2 border-black rounded-full";
-      obstacle.style.top = Math.random() * window.innerHeight + "px";
-      obstacle.style.left = Math.random() * window.innerWidth + "px";
-      obstacle.directionX = Math.random() > 0.5 ? 1 : -1;
-      obstacle.directionY = Math.random() > 0.5 ? 1 : -1;
-      obstaclesContainer.appendChild(obstacle);
-      obstacles.push(obstacle);
-    }
-    
-    function moveObstacles() {
-      obstacles.forEach((obstacle) => {
-        let top = parseFloat(obstacle.style.top);
-        let left = parseFloat(obstacle.style.left);
-    
-        top += obstacle.directionY * step;
-        left += obstacle.directionX * step;
-    
-        if (top < 0 || top > window.innerHeight - obstacle.offsetHeight) {
-          obstacle.directionY *= -1;
-        }
-        if (left < 0 || left > window.innerWidth - obstacle.offsetWidth) {
-          obstacle.directionX *= -1;
-        }
-    
-        obstacle.style.top = top + "px";
-        obstacle.style.left = left + "px";
-      });
-    
-      checkCollision();
-      animationFrameId = requestAnimationFrame(moveObstacles);
-    }
-    
-    function updateElementPosition() {
-      if (!gameOver) {
-        const elementWidth = controlledElement.offsetWidth;
-        const elementHeight = controlledElement.offsetHeight;
-    
-        let newPositionX =
-          (positionX / 100) * (window.innerWidth - elementWidth);
-        let newPositionY =
-          (positionY / 100) * (window.innerHeight - elementHeight);
-    
-        newPositionX = Math.max(
-          0,
-          Math.min(window.innerWidth - elementWidth, newPositionX)
-        );
-        newPositionY = Math.max(
-          0,
-          Math.min(window.innerHeight - elementHeight, newPositionY)
-        );
-    
-        controlledElement.style.left = newPositionX + "px";
-        controlledElement.style.top = newPositionY + "px";
-      }
-    }
-    
-    function handleKeyPress(event) {
-      if (gameOver) return;
-    
-      let keyStep;
-      switch (difficulty) {
-        case "easy":
-          keyStep = step * 3;
-          break;
-        case "medium":
-          keyStep = step * 3;
-          break;
-        case "hard":
-          keyStep = step * 3;
-          break;
-        case "extreme":
-          keyStep = step * 3; // Reduce the multiplier for extreme difficulty
-          break;
-        default:
-          keyStep = step * 3;
-      }
-    
-      switch (event.key) {
-        case "ArrowUp":
-          positionY = Math.max(0, positionY - keyStep);
-          break;
-        case "ArrowDown":
-          positionY = Math.min(100, positionY + keyStep);
-          break;
-        case "ArrowLeft":
-          positionX = Math.max(0, positionX - keyStep);
-          break;
-        case "ArrowRight":
-          positionX = Math.min(100, positionX + keyStep);
-          break;
-      }
-    
-      updateElementPosition();
-      checkCollision();
-    }
-    
-    let touchStartX = 0;
-    let touchStartY = 0;
-    
-    function handleTouchStart(event) {
-      const touch = event.touches[0];
-      touchStartX = touch.clientX;
-      touchStartY = touch.clientY;
-    }
-    
-    function handleTouchMove(event) {
-      if (gameOver) return;
-    
-      const touch = event.touches[0];
-      const touchEndX = touch.clientX;
-      const touchEndY = touch.clientY;
-    
-      const deltaX = touchEndX - touchStartX;
-      const deltaY = touchEndY - touchStartY;
-    
-      const touchStep = step * 2; // Use the step value based on difficulty
-    
-      if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        if (deltaX > 0) {
-          positionX = Math.min(100, positionX + touchStep); // Swipe right
-        } else {
-          positionX = Math.max(0, positionX - touchStep); // Swipe left
-        }
-      } else {
-        if (deltaY > 0) {
-          positionY = Math.min(100, positionY + touchStep); // Swipe down
-        } else {
-          positionY = Math.max(0, positionY - touchStep); // Swipe up
-        }
-      }
-    
-      updateElementPosition();
-      checkCollision();
-    
-      touchStartX = touchEndX;
-      touchStartY = touchEndY;
-    }
-    
-    function checkCollision() {
-      if (invincible) return;
-    
-      const controlledRect = controlledElement.getBoundingClientRect();
-    
-      obstacles.forEach((obstacle) => {
-        const obstacleRect = obstacle.getBoundingClientRect();
-    
-        if (
-          controlledRect.left < obstacleRect.right &&
-          controlledRect.right > obstacleRect.left &&
-          controlledRect.top < obstacleRect.bottom &&
-          controlledRect.bottom > obstacleRect.top
-        ) {
-          console.log("Ouch! Collision detected!");
-          handleCollision();
-        }
-      });
-    }
-    
-    function handleCollision() {
-      const now = Date.now();
-    
-      if (now - lastHitTime > 1000) {
-        health -= 33.34;
-        lastHitTime = now;
-        updateHealthBar();
-        if (health <= 0) {
-          endGame();
-        }
-      }
-    }
-    
-    function updateHealthBar() {
-      healthBarInner.style.width = health + "%";
-    }
-    
-    function updateScoreboard() {
-      const highestScores = {
-        easy: Math.max(...scoreHistory.easy, 0),
-        medium: Math.max(...scoreHistory.medium, 0),
-        hard: Math.max(...scoreHistory.hard, 0),
-        extreme: Math.max(...scoreHistory.extreme, 0),
+
+      // Load score history from localStorage
+      const scoreHistory = JSON.parse(localStorage.getItem("scoreHistory")) || {
+        easy: [],
+        medium: [],
+        hard: [],
+        extreme: [],
       };
-    
-      scoreboard.innerHTML = `
-              <div class="bg-gray-800 bg-opacity-75 p-4 rounded-lg shadow-lg text-white">
-          <div class="text-2xl font-bold mb-4">Score: ${score}</div>
-          <div class="text-xl font-semibold mb-2">Highest Scores:</div>
-          <div class="mb-2">
-            <span class="font-semibold">Easy:</span> ${highestScores.easy}
-          </div>
-          <div class="mb-2">
-            <span class="font-semibold">Medium:</span> ${highestScores.medium}
-          </div>
-          <div class="mb-2">
-            <span class="font-semibold">Hard:</span> ${highestScores.hard}
-          </div>
-          <div>
-            <span class="font-semibold">Extreme:</span> ${highestScores.extreme}
-          </div>
+
+      function setCharacterImage() {
+        const selectedCharacter = characterSelect.value;
+        let imageUrl = "";
+
+        switch (selectedCharacter) {
+          case "luigi":
+            imageUrl = "Luigi.webp";
+            break;
+          case "peach":
+            imageUrl = "Peach.webp";
+            break;
+          case "mario":
+          default:
+            imageUrl = "mario.webp";
+            break;
+        }
+
+        controlledElement.style.backgroundImage = `url('${imageUrl}')`;
+      }
+
+      function setDifficulty() {
+        difficulty = difficultySelect.value;
+        switch (difficulty) {
+          case "easy":
+            numObstacles = 10;
+            step = 1;
+            break;
+          case "medium":
+            numObstacles = 20;
+            step = 2;
+            break;
+          case "hard":
+            numObstacles = 30;
+            step = 2;
+            break;
+          case "extreme":
+            numObstacles = 40;
+            step = 4;
+            if (extremeIntervalId) clearInterval(extremeIntervalId);
+            extremeIntervalId = setInterval(() => {
+              step += 1;
+            }, 10000);
+            break;
+        }
+      }
+
+      function createObstacle() {
+        const obstacle = document.createElement("div");
+        obstacle.className =
+          "absolute w-8 h-8 sm:w-12 sm:h-12 bg-red-500 border-2 border-black rounded-full";
+        obstacle.style.top = Math.random() * window.innerHeight + "px";
+        obstacle.style.left = Math.random() * window.innerWidth + "px";
+        obstacle.directionX = Math.random() > 0.5 ? 1 : -1;
+        obstacle.directionY = Math.random() > 0.5 ? 1 : -1;
+        obstaclesContainer.appendChild(obstacle);
+        obstacles.push(obstacle);
+      }
+
+      function createHealingObstacle() {
+        const healingObstacle = document.createElement("div");
+        healingObstacle.className =
+          "absolute w-8 h-8 sm:w-12 sm:h-12 bg-green-500 border-2 border-black rounded-full healing-obstacle";
+        healingObstacle.style.top = Math.random() * window.innerHeight + "px";
+        healingObstacle.style.left = Math.random() * window.innerWidth + "px";
+        healingObstacle.directionX = Math.random() > 0.5 ? 1 : -1;
+        healingObstacle.directionY = Math.random() > 0.5 ? 1 : -1;
+        obstaclesContainer.appendChild(healingObstacle);
+        obstacles.push(healingObstacle);
+      }
+
+      function createMultipleHealingObstacles() {
+        for (let i = 0; i < numHealingObstacles; i++) {
+          createHealingObstacle();
+        }
+      }
+
+      function moveObstacles() {
+        obstacles.forEach((obstacle) => {
+          let top = parseFloat(obstacle.style.top);
+          let left = parseFloat(obstacle.style.left);
+
+          top += obstacle.directionY * step;
+          left += obstacle.directionX * step;
+
+          if (top < 0 || top > window.innerHeight - obstacle.offsetHeight) {
+            obstacle.directionY *= -1;
+          }
+          if (left < 0 || left > window.innerWidth - obstacle.offsetWidth) {
+            obstacle.directionX *= -1;
+          }
+
+          obstacle.style.top = top + "px";
+          obstacle.style.left = left + "px";
+        });
+
+        checkCollision();
+        animationFrameId = requestAnimationFrame(moveObstacles);
+      }
+
+      function updateElementPosition() {
+        if (!gameOver) {
+          const elementWidth = controlledElement.offsetWidth;
+          const elementHeight = controlledElement.offsetHeight;
+
+          let newPositionX =
+            (positionX / 100) * (window.innerWidth - elementWidth);
+          let newPositionY =
+            (positionY / 100) * (window.innerHeight - elementHeight);
+
+          newPositionX = Math.max(
+            0,
+            Math.min(window.innerWidth - elementWidth, newPositionX)
+          );
+          newPositionY = Math.max(
+            0,
+            Math.min(window.innerHeight - elementHeight, newPositionY)
+          );
+
+          controlledElement.style.left = newPositionX + "px";
+          controlledElement.style.top = newPositionY + "px";
+        }
+      }
+
+      function handleKeyPress(event) {
+        if (gameOver) return;
+
+        let keyStep;
+        switch (difficulty) {
+          case "easy":
+            keyStep = step * 3;
+            break;
+          case "medium":
+            keyStep = step * 3;
+            break;
+          case "hard":
+            keyStep = step * 3;
+            break;
+          case "extreme":
+            keyStep = step * 3; // Reduce the multiplier for extreme difficulty
+            break;
+          default:
+            keyStep = step * 3;
+        }
+
+        switch (event.key) {
+          case "ArrowUp":
+            positionY = Math.max(0, positionY - keyStep);
+            break;
+          case "ArrowDown":
+            positionY = Math.min(100, positionY + keyStep);
+            break;
+          case "ArrowLeft":
+            positionX = Math.max(0, positionX - keyStep);
+            break;
+          case "ArrowRight":
+            positionX = Math.min(100, positionX + keyStep);
+            break;
+        }
+
+        updateElementPosition();
+        checkCollision();
+      }
+
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      function handleTouchStart(event) {
+        const touch = event.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+      }
+
+      function handleTouchMove(event) {
+        if (gameOver) return;
+
+        const touch = event.touches[0];
+        const touchEndX = touch.clientX;
+        const touchEndY = touch.clientY;
+
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
+
+        const touchStep = step * 2; // Use the step value based on difficulty
+
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+          if (deltaX > 0) {
+            positionX = Math.min(100, positionX + touchStep); // Swipe right
+          } else {
+            positionX = Math.max(0, positionX - touchStep); // Swipe left
+          }
+        } else {
+          if (deltaY > 0) {
+            positionY = Math.min(100, positionY + touchStep); // Swipe down
+          } else {
+            positionY = Math.max(0, positionY - touchStep); // Swipe up
+          }
+        }
+
+        updateElementPosition();
+        checkCollision();
+
+        touchStartX = touchEndX;
+        touchStartY = touchEndY;
+      }
+
+      function checkCollision() {
+        if (invincible) return;
+
+        const controlledRect = controlledElement.getBoundingClientRect();
+
+        obstacles.forEach((obstacle) => {
+          const obstacleRect = obstacle.getBoundingClientRect();
+
+          if (
+            controlledRect.left < obstacleRect.right &&
+            controlledRect.right > obstacleRect.left &&
+            controlledRect.top < obstacleRect.bottom &&
+            controlledRect.bottom > obstacleRect.top
+          ) {
+            if (obstacle.classList.contains("healing-obstacle")) {
+              health = Math.min(100, health + 20); // Increase health by 20
+              updateHealthBar(); // Update the health bar
+              obstacle.remove();
+              obstacles.splice(obstacles.indexOf(obstacle), 1);
+            } else {
+              handleCollision();
+            }
+          }
+        });
+      }
+
+      function handleCollision() {
+        const now = Date.now();
+
+        if (now - lastHitTime > 1000) {
+          health -= 33.34;
+          lastHitTime = now;
+          updateHealthBar();
+          if (health <= 0) {
+            endGame();
+          }
+        }
+      }
+
+      function updateHealthBar() {
+        healthBarInner.style.width = health + "%";
+      }
+
+      function updateScoreboard() {
+        const highestScores = {
+          easy: Math.max(...scoreHistory.easy, 0),
+          medium: Math.max(...scoreHistory.medium, 0),
+          hard: Math.max(...scoreHistory.hard, 0),
+          extreme: Math.max(...scoreHistory.extreme, 0),
+        };
+
+        scoreboard.innerHTML = `
+      <div class="bg-gray-800 bg-opacity-75 p-4 rounded-lg shadow-lg text-white">
+        <div class="text-2xl font-bold mb-4">Score: ${score}</div>
+        <div class="text-xl font-semibold mb-2">Highest Scores:</div>
+        <div class="mb-2">
+          <span class="font-semibold">Easy:</span> ${highestScores.easy}
         </div>
-      `;
-    }
-    
-    function startInvincibility() {
-      invincible = true;
-      invincibilityEndTime = Date.now() + 5000;
-    }
-    
-    function checkInvincibility() {
-      const now = Date.now();
-      if (invincible && now >= invincibilityEndTime) {
-        invincible = false;
+        <div class="mb-2">
+          <span class="font-semibold">Medium:</span> ${highestScores.medium}
+        </div>
+        <div class="mb-2">
+          <span class="font-semibold">Hard:</span> ${highestScores.hard}
+        </div>
+        <div>
+          <span class="font-semibold">Extreme:</span> ${highestScores.extreme}
+        </div>
+      </div>
+    `;
       }
-    }
-    
-    function endGame() {
-      gameOver = true;
-      cancelAnimationFrame(animationFrameId);
-      clearInterval(scoreIntervalId);
-      if (extremeIntervalId) clearInterval(extremeIntervalId);
-      tryAgainButton.classList.remove("hidden");
-      saveScore();
-      localStorage.setItem("score", score);
-    }
-    
-    function saveScore() {
-      scoreHistory[difficulty].push(score);
-      localStorage.setItem("scoreHistory", JSON.stringify(scoreHistory));
-      updateScoreHistory();
-    }
-    
-        function updateScoreHistory() {
-      easyScoresList.innerHTML = scoreHistory.easy.map(score => `<li>${score}</li>`).join('');
-      mediumScoresList.innerHTML = scoreHistory.medium.map(score => `<li>${score}</li>`).join('');
-      hardScoresList.innerHTML = scoreHistory.hard.map(score => `<li>${score}</li>`).join('');
-      extremeScoresList.innerHTML = scoreHistory.extreme.map(score => `<li>${score}</li>`).join('');
-    }
-    
-    function restartGame() {
-      health = 100;
-      score = 0;
-      gameOver = false;
-      updateHealthBar();
-      updateScoreboard();
-      tryAgainButton.classList.add("hidden");
-      cancelAnimationFrame(animationFrameId); // Cancel any ongoing animation frames
-      obstacles.forEach((obstacle) => obstacle.remove()); // Remove existing obstacles
-      obstacles.length = 0; // Clear the obstacles array
-      setDifficulty(); // Reset difficulty settings
-      for (let i = 0; i < numObstacles; i++) {
-        createObstacle();
+
+      function startInvincibility() {
+        invincible = true;
+        invincibilityEndTime = Date.now() + 5000;
       }
-      scoreIntervalId = setInterval(() => {
-        score += 1;
+
+      function checkInvincibility() {
+        const now = Date.now();
+        if (invincible && now >= invincibilityEndTime) {
+          invincible = false;
+        }
+      }
+
+      function endGame() {
+        gameOver = true;
+        cancelAnimationFrame(animationFrameId);
+        clearInterval(scoreIntervalId);
+        if (extremeIntervalId) clearInterval(extremeIntervalId);
+        tryAgainButton.classList.remove("hidden");
+        saveScore();
+        localStorage.setItem("score", score);
+      }
+
+      function saveScore() {
+        scoreHistory[difficulty].push(score);
+        localStorage.setItem("scoreHistory", JSON.stringify(scoreHistory));
+        updateScoreHistory();
+      }
+
+      function updateScoreHistory() {
+        easyScoresList.innerHTML = scoreHistory.easy
+          .map((score) => `<li>${score}</li>`)
+          .join("");
+        mediumScoresList.innerHTML = scoreHistory.medium
+          .map((score) => `<li>${score}</li>`)
+          .join("");
+        hardScoresList.innerHTML = scoreHistory.hard
+          .map((score) => `<li>${score}</li>`)
+          .join("");
+        extremeScoresList.innerHTML = scoreHistory.extreme
+          .map((score) => `<li>${score}</li>`)
+          .join("");
+      }
+
+      function restartGame() {
+        health = 100;
+        score = 0;
+        gameOver = false;
+        updateHealthBar();
         updateScoreboard();
-      }, 1000);
-      moveObstacles();
-    }
-    
-    characterSelect.addEventListener("change", setCharacterImage);
-    difficultySelect.addEventListener("change", restartGame);
-    document.addEventListener("keydown", handleKeyPress);
-    document.addEventListener("touchstart", handleTouchStart);
-    document.addEventListener("touchmove", handleTouchMove);
-    tryAgainButton.addEventListener("click", restartGame);
-    
-    // Blur select elements when they are focused to prevent key presses from changing the selection
-    characterSelect.addEventListener("focus", (event) => event.target.blur());
-    difficultySelect.addEventListener("focus", (event) => event.target.blur());
-    
-    setDifficulty(); // Set initial difficulty
-    for (let i = 0; i < numObstacles; i++) {
-      createObstacle();
-    }
-    
-    scoreIntervalId = setInterval(() => {
-      score += 1;
-      updateScoreboard();
-    }, 1000);
-    
-    moveObstacles();
-    updateScoreHistory(); // Update the score history on page load
+        tryAgainButton.classList.add("hidden");
+        cancelAnimationFrame(animationFrameId); // Cancel any ongoing animation frames
+        obstacles.forEach((obstacle) => obstacle.remove()); // Remove existing obstacles
+        obstacles.length = 0; // Clear the obstacles array
+        setDifficulty(); // Reset difficulty settings
+        for (let i = 0; i < numObstacles; i++) {
+          createObstacle();
+        }
+        createMultipleHealingObstacles(); // Create multiple healing obstacles
+        moveObstacles();
+        scoreIntervalId = setInterval(() => {
+          score += 1;
+          updateScoreboard();
+        }, 1000);
+      }
+
+      function handleDifficultyChange() {
+        setDifficulty();
+        for (let i = 0; i < numObstacles; i++) {
+          createObstacle();
+        }
+        difficultySelect.selectedIndex = -1; // Unselect the option
+      }
+
+      document.addEventListener("keydown", handleKeyPress);
+      document.addEventListener("touchstart", handleTouchStart);
+      document.addEventListener("touchmove", handleTouchMove);
+      characterSelect.addEventListener("change", setCharacterImage);
+      difficultySelect.addEventListener("change", handleDifficultyChange);
+      tryAgainButton.addEventListener("click", restartGame);
+
+      setCharacterImage();
+      setDifficulty();
+      restartGame();
     </script>
-    </body>
-    </html>
+  </body>
+</html>
