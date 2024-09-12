@@ -47,6 +47,7 @@
         id="character-select"
         class="ml-2 bg-gray-800 text-white px-2 py-1 rounded"
       >
+        <option value="" disabled selected>Select a character</option>
         <option value="mario">Mario</option>
         <option value="luigi">Luigi</option>
         <option value="peach">Peach</option>
@@ -60,6 +61,7 @@
         id="difficulty-select"
         class="ml-2 bg-gray-800 text-white px-2 py-1 rounded"
       >
+        <option value="" disabled selected>Select difficulty</option>
         <option value="easy">Easy</option>
         <option value="medium">Medium</option>
         <option value="hard">Hard</option>
@@ -201,6 +203,7 @@
         }
 
         controlledElement.style.backgroundImage = `url('${imageUrl}')`;
+        characterSelect.selectedIndex = 0; // Reset to placeholder
       }
 
       function setDifficulty() {
@@ -227,6 +230,7 @@
             }, 10000);
             break;
         }
+        difficultySelect.selectedIndex = 0; // Reset to placeholder
       }
 
       function createObstacle() {
@@ -440,23 +444,23 @@
         };
 
         scoreboard.innerHTML = `
-      <div class="bg-gray-800 bg-opacity-75 p-4 rounded-lg shadow-lg text-white">
-        <div class="text-2xl font-bold mb-4">Score: ${score}</div>
-        <div class="text-xl font-semibold mb-2">Highest Scores:</div>
-        <div class="mb-2">
-          <span class="font-semibold">Easy:</span> ${highestScores.easy}
-        </div>
-        <div class="mb-2">
-          <span class="font-semibold">Medium:</span> ${highestScores.medium}
-        </div>
-        <div class="mb-2">
-          <span class="font-semibold">Hard:</span> ${highestScores.hard}
-        </div>
-        <div>
-          <span class="font-semibold">Extreme:</span> ${highestScores.extreme}
-        </div>
-      </div>
-    `;
+                      <div class="bg-gray-800 bg-opacity-75 p-4 rounded-lg shadow-lg text-white">
+                        <div class="text-2xl font-bold mb-4">Score: ${score}</div>
+                        <div class="text-xl font-semibold mb-2">Highest Scores:</div>
+                        <div class="mb-2">
+                          <span class="font-semibold">Easy:</span> ${highestScores.easy}
+                        </div>
+                        <div class="mb-2">
+                          <span class="font-semibold">Medium:</span> ${highestScores.medium}
+                        </div>
+                        <div class="mb-2">
+                          <span class="font-semibold">Hard:</span> ${highestScores.hard}
+                        </div>
+                        <div>
+                          <span class="font-semibold">Extreme:</span> ${highestScores.extreme}
+                        </div>
+                      </div>
+                    `;
       }
 
       function startInvincibility() {
@@ -479,6 +483,7 @@
         tryAgainButton.classList.remove("hidden");
         saveScore();
         localStorage.setItem("score", score);
+        difficultySelect.disabled = true; // Disable the select box
       }
 
       function saveScore() {
@@ -522,6 +527,7 @@
           score += 1;
           updateScoreboard();
         }, 1000);
+        difficultySelect.disabled = false; // Enable the select box
       }
 
       function handleDifficultyChange() {
@@ -529,7 +535,7 @@
         for (let i = 0; i < numObstacles; i++) {
           createObstacle();
         }
-        difficultySelect.selectedIndex = -1; // Unselect the option
+        difficultySelect.disabled = true; // Disable the select box
       }
 
       document.addEventListener("keydown", handleKeyPress);
